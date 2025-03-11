@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
             sensor_msgs::msg::Image::SharedPtr msg = cv_bridge::CvImage(std_msgs::msg::Header(), "mono8", resized_frame).toImageMsg();
             msg->header = header;
 
-            RCLCPP_INFO(camera_driver_node->get_logger(), "Timestamp %f", header.stamp.sec + header.stamp.nanosec*1e-9);
+            // RCLCPP_INFO(camera_driver_node->get_logger(), "Timestamp %f", header.stamp.sec + header.stamp.nanosec*1e-9);
 
             pub.publish(*msg);
 
