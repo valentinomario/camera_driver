@@ -24,4 +24,14 @@ ament_target_dependencies(camera_driver_exec rclcpp rcpputils std_msgs sensor_ms
 install(TARGETS camera_driver_exec
   DESTINATION lib/${PROJECT_NAME})
 
+install(
+        DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+        DIRECTORY config
+        DESTINATION share/${PROJECT_NAME}
+)
+
 ament_package()

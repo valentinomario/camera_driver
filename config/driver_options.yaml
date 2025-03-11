@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    outputTopic: "/camera/image_raw"
+    inputWidth: 1920
+    inputHeight: 1080
+    inputFramerate: 30
+    outputWidth: 1024
+    outputHeight: 576
+    sensorId: 0
+    format: "GRAY8"

@@ -13,19 +13,56 @@
 
 
 
+
 int main(int argc, char *argv[])
 {
+
+    std::string output_topic, format;
+    int input_height, input_width, input_framerate;
+    int output_height, output_width;
+    int sensor_id;
+
     cv::VideoCapture cap;
     rclcpp::init(argc, argv);
 
-    auto camera_driver_node = rclcpp::Node::make_shared("CameraDriver");
+    auto camera_driver_node = rclcpp::Node::make_shared("camera_driver");
 
-    RCLCPP_INFO(camera_driver_node->get_logger(), "CameraDriver started");
+    camera_driver_node->declare_parameter("outputTopic", "/camera/image_raw");
+    camera_driver_node->get_parameter("outputTopic", output_topic);
+
+    camera_driver_node->declare_parameter("inputHeight", 1080);
+    camera_driver_node->get_parameter("inputHeight", input_height);
+
+    camera_driver_node->declare_parameter("inputWidth", 1920);
+    camera_driver_node->get_parameter("inputWidth", input_width);
+
+    camera_driver_node->declare_parameter("inputFramerate", 30);
+    camera_driver_node->get_parameter("inputFramerate", input_framerate);
+
+    camera_driver_node->declare_parameter("outputHeight", 576);
+    camera_driver_node->get_parameter("outputHeight", output_height);
+
+    camera_driver_node->declare_parameter("outputWidth", 1024);
+    camera_driver_node->get_parameter("outputWidth", output_width);
+
+    camera_driver_node->declare_parameter("sensorId", 0);
+    camera_driver_node->get_parameter("sensorId", sensor_id);
+
+    camera_driver_node->declare_parameter("format", "GRAY8");
+    camera_driver_node->get_parameter("format", format);
+
+
+    RCLCPP_INFO(camera_driver_node->get_logger(), "camera driver started");
 
     image_transport::ImageTransport it(camera_driver_node);
-    image_transport::Publisher pub = it.advertise("/camera/image_raw", 1);
+    image_transport::Publisher pub = it.advertise(output_topic, 1);
 
-    std::string pipeline ="nvarguscamerasrc sensor_id=0 ! video/x-raw(memory:NVMM),width=1920,height=1080,framerate=30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)GRAY8 ! appsink";
+    std::string pipeline ="nvarguscamerasrc sensor_id=" + std::to_string(sensor_id) +
+            " ! video/x-raw(memory:NVMM),width=" + std::to_string(input_width)+ ",height=" + std::to_string(input_height) + ",framerate=" + std::to_string(input_framerate) +
+            "/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)" + format + " ! appsink";
+
+    RCLCPP_INFO(camera_driver_node->get_logger(), "%s", pipeline.c_str());
+
     cap.open(pipeline, cv::CAP_GSTREAMER);
 
 
@@ -47,7 +84,7 @@ int main(int argc, char *argv[])
             original_gpu_frame.upload(frame);
 
             cv::cuda::GpuMat resized_gpu_frame;
-            cv::cuda::resize(original_gpu_frame, resized_gpu_frame, cv::Size(1024, 576), cv::INTER_LINEAR);
+            cv::cuda::resize(original_gpu_frame, resized_gpu_frame, cv::Size(output_width, output_height), cv::INTER_LINEAR);
 
             cv::Mat resized_frame;
             resized_gpu_frame.download(resized_frame);
